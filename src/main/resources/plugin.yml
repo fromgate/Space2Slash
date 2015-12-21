@@ -1,0 +1,7 @@
+name: Space2Slash
+main: ru.nukkit.space2slash.Space2Slash
+version: "0.0.1"
+api: ["1.0.0"]
+load: POSTWORLD
+author: fromgate, nukkit.ru
+description: Allows to type spaces twice instead of slash when typing commands
