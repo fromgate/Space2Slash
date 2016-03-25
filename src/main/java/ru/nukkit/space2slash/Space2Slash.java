@@ -11,6 +11,7 @@ import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.TextFormat;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.ListIterator;
 
 public class Space2Slash extends PluginBase implements Listener {
@@ -21,28 +22,44 @@ public class Space2Slash extends PluginBase implements Listener {
         this.getServer().getPluginManager().registerEvents(this, this);
     }
 
+    static Iterable<String> reversed(final ArrayList<String> original) {
+      return new Iterable<String>() {
+        public Iterator<String> iterator() {
+          final ListIterator<String> i = original.listIterator(original.size());
+          return new Iterator<String>() {
+              public boolean hasNext() { return i.hasPrevious(); }
+              public String next() { return i.previous(); }
+              public void remove() { i.remove(); }
+          };
+        }
+      };
+    }
+    
     String preprocessCommand(String message) {
       if (message.startsWith("!") && !history.isEmpty()) {
         if (message.equals("!!")) {
-          return history.get(0);
+          return history.get(history.size() - 1);
         }
         String prefix = message.substring(1);
-        int index = Integer.parseInt(prefix);
-        if (index > 0 && index <= history.size()) {
-          return history.get(index - 1);
-        }
-        for (String command : history) {
-          if (command.startsWith(prefix)) {
-            return command;
+        if (Character.isDigit(prefix.codePointAt(0))) {
+          try {
+            int index = Integer.parseInt(prefix);
+            if (index > 0 && index <= history.size()) {
+              return history.get(index - 1);
+            }
+          } catch (NumberFormatException ex) {
+          }
+        } else {
+          for (String command : reversed(history)) {
+            if (command.startsWith(prefix)) {
+              return command;
+            }
           }
         }
       }
-      if (message.startsWith("  ")) {
-        if (message.equals("  ") && !history.isEmpty()) {
-          return history.get(0);
-        }
+      if (message.startsWith(" ")) {
         message = message.trim();
-        history.add(0, message);
+        history.add(message);
         return message;
       }
       return null;
